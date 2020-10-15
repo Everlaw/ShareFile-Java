@@ -202,9 +202,8 @@ class SFApiQueryExecutor<T> implements ISFApiExecuteQuery
     }
 
     /**
-        This call has to be synchronized to protect from the OAuthToken renewal problems otherwise
-        it nmay happen that two parellel threads invoke this function, receive 401 for ShareFile
-        and one of them renews the OAuthToken leaving the other one with a stale copy.
+        This call makes use of a read-write lock held by the client to prevent threads from
+        proceeding while the OAuthToken is being renewed, but allow parallel calls otherwise.
      */
 	@Override
 	public T executeBlockingQuery() throws SFServerException,
@@ -219,6 +218,8 @@ class SFApiQueryExecutor<T> implements ISFApiExecuteQuery
 
         // Do query under read lock
         mSFApiClient.readWriteLock.readLock().lock();
+        // Snapshot to determine if state changes
+        String tokenBefore = mSFApiClient.getOAuthToken().getAccessToken();
         String urlstr;
         URL url;
         try {
@@ -290,13 +291,12 @@ class SFApiQueryExecutor<T> implements ISFApiExecuteQuery
                     if(formsAuthResponseCookies != null) {
                         throw new SFNotAuthorizedException(SFKeywords.UN_AUTHORIZED, formsAuthResponseCookies, mReAuthContext);
                     }
-                    // Writelock to prevent use of token while it's being updated, note state before
-                    String tokenBefore = mSFApiClient.getOAuthToken().getAccessToken();
-                    mSFApiClient.readWriteLock.writeLock().lock();
                     if (! tokenBefore.equals(mSFApiClient.getOAuthToken().getAccessToken())) {
                         // If another thread already refreshed while this thread was waiting
                         return executeBlockingQuery();
                     }
+                    // Writelock to prevent use of token while it's being updated
+                    mSFApiClient.readWriteLock.writeLock().lock();
                     try {
                         // Attempt to reauthenticate, if no exception, retry query
                         reauthenticate();

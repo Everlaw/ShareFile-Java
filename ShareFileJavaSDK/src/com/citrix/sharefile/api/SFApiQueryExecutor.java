@@ -291,15 +291,15 @@ class SFApiQueryExecutor<T> implements ISFApiExecuteQuery
                     if(formsAuthResponseCookies != null) {
                         throw new SFNotAuthorizedException(SFKeywords.UN_AUTHORIZED, formsAuthResponseCookies, mReAuthContext);
                     }
-                    if (! tokenBefore.equals(mSFApiClient.getOAuthToken().getAccessToken())) {
-                        // If another thread already refreshed while this thread was waiting
-                        return executeBlockingQuery();
-                    }
+
                     // Writelock to prevent use of token while it's being updated
                     mSFApiClient.readWriteLock.writeLock().lock();
                     try {
-                        // Attempt to reauthenticate, if no exception, retry query
-                        reauthenticate();
+                        if (tokenBefore.equals(mSFApiClient.getOAuthToken().getAccessToken())) {
+                            // If no other thread has already updated token
+                            // Attempt to reauthenticate, if no exception, retry query
+                            reauthenticate();
+                        }
                     } finally {
                         mSFApiClient.readWriteLock.writeLock().unlock();
                     }

@@ -25,6 +25,12 @@ We provide a class with the specific properties for this type of response.
 with an authorization response.
 
 ## Building the SDK ##
+### Everlaw ###
+In the `servers` repository, the root-level `pom.xml` should have sharefile-api listed as a dependency with the current version. It should also be listed in the `pom.xml` for `web`, without version. On build, it will look for the artifact in your local maven repository, or in the archiva repository on EFS if it doesn't find it locally.
+
+Note `build.gradle` for this project has a section `uploadArchives` for generating those artifacts. There should be two repositores listed, with one commented out, as needed. For local development you can use the one referencing `mavenLocal` to deploy directly to your local repository and bypass EFS. When ready to deply widely, increment the version in `build.gradle` and the `pom.xml` listed above and use the lines targeting the archiva repository on EFS. Note EFS must be mounted on your machine, and you will need to replace the placeholder text with the current archiva password. Remove the password again before committing `build.gradle` to the git repository. This could also (and probably should be) configured to use an environment variable. 
+
+### General ###
 The SDK is a pure Java code and you can build it using the Eclipse IDE (Kepler or higher) or using the Android Studio IDE. Simply point your IDE's import functionality to the SDK folder and it should be able to import the projects correctly. Make sure you have Java-7 JDK atleast.  You could either generate `.jar` files from the SDK and use them in your application projects or directly include the SDK Module in your Android application Project or Eclipse Workspace of the application.
 
 Alternatively you can use the SDK without building the SDK code, if you are using Gradle or Maven, you can directly add the dependency as follows:

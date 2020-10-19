@@ -23,6 +23,14 @@ public class SFConfiguration
 	public static final boolean LOCALE_SCRIPT_SUPPORT = false;
 
 	private final Map<String ,String> mAdditionalHttpHeaders = new HashMap<String,String>();
+
+	public SFConfiguration() {
+		// Default
+	}
+
+	public SFConfiguration(SFConfiguration config) {
+		this.mAdditionalHttpHeaders.putAll(config.mAdditionalHttpHeaders);
+	}
 		
 	public void addAcceptedLanguages(ArrayList<String> acceptedLanguages) 
 	{
@@ -88,5 +96,4 @@ public class SFConfiguration
             conn.setRequestProperty(pair.getKey(), pair.getValue());
         }
 	}
-	
 }

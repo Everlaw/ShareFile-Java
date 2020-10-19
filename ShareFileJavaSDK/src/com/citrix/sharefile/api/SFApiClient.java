@@ -184,9 +184,33 @@ public class SFApiClient extends ISFEntities.Implementation implements ISFApiCli
 	}
 
     @Override
-	public synchronized <T> ISFApiExecuteQuery getExecutor(ISFQuery<T> query , ISFApiResultCallback<T> listener, ISFReAuthHandler reauthHandler) throws SFInvalidStateException
+	public <T> ISFApiExecuteQuery getExecutor(
+			ISFQuery<T> query , ISFApiResultCallback<T> listener,
+			ISFReAuthHandler reauthHandler
+	) throws SFInvalidStateException
 	{
-		return new SFApiQueryExecutor<T>(this,query, listener, mCookieManager, mSFAppConfig,mOauthTokenRenewer, reauthHandler);
+		return getExecutor(query, listener, reauthHandler, getConfig());
+	}
+
+	public <T> ISFApiExecuteQuery getExecutor(
+			ISFQuery<T> query, SFConfiguration appConfig
+	) throws SFInvalidStateException
+	{
+		return getExecutor(query, null, mReAuthHandler, appConfig);
+	}
+
+	public <T> ISFApiExecuteQuery getExecutor(
+			ISFQuery<T> query, ISFApiResultCallback<T> listener,
+			ISFReAuthHandler reauthHandler, SFConfiguration appConfig
+	) throws SFInvalidStateException
+	{
+		readWriteLock.readLock().lock();
+		try {
+			return new SFApiQueryExecutor<T>(this, query, listener, mCookieManager, appConfig,
+					mOauthTokenRenewer, reauthHandler);
+		} finally {
+			readWriteLock.readLock().unlock();
+		}
 	}
 
     /**
@@ -264,10 +288,13 @@ public class SFApiClient extends ISFEntities.Implementation implements ISFApiCli
 	{		
 		mSfUserId = sfUserid;
 	}
-		
+
+	/**
+	 * Returns a copy of the template config object held here
+	 */
 	public SFConfiguration getConfig()
 	{
-		return mSFAppConfig;
+		return new SFConfiguration(mSFAppConfig);
 	}
 
 	public <T extends SFODataObject> T executeQuery(ISFQuery<T> query) throws

@@ -5,7 +5,7 @@ apply plugin: 'maven'
 apply plugin: 'signing'
 
 String shareFileJarName = 'sharefile-api'
-String shareFileJarVersion = '3.1.6'
+String shareFileJarVersion = '3.1.8'
 String shareFilePomFileName = "$buildDir/libs/"+shareFileJarName+"-"+shareFileJarVersion+".pom"
 
 group = "com.everlaw"
@@ -107,10 +107,10 @@ task writeNewPom << {
 uploadArchives {
     repositories {
         mavenDeployer {
-            repository(url: mavenLocal().getUrl())
-//            repository(url: "http://172.20.0.42:8080/archiva/repository/internal") {
-//                authentication(userName: "admin", password: "ARCHIVA DEV SHARED PASSWORD HERE")
-//            }
+//            repository(url: mavenLocal().getUrl())
+            repository(url: "http://172.20.0.42:8080/archiva/repository/internal") {
+                authentication(userName: "admin", password: "nojimmy1")
+            }
         }
     }
 }

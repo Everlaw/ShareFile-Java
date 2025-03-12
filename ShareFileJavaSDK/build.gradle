@@ -2,10 +2,11 @@ apply plugin: 'java'
 apply plugin: 'eclipse'
 apply plugin: 'java-library-distribution'
 apply plugin: 'maven'
+apply plugin: 'maven-publish'
 apply plugin: 'signing'
 
 String shareFileJarName = 'sharefile-api'
-String shareFileJarVersion = '3.1.9'
+String shareFileJarVersion = '3.1.9-everlaw1'
 String shareFilePomFileName = "$buildDir/libs/"+shareFileJarName+"-"+shareFileJarVersion+".pom"
 
 group = "com.everlaw"
@@ -108,6 +109,25 @@ uploadArchives {
     repositories {
         mavenDeployer {
            repository(url: mavenLocal().getUrl())
+        }
+    }
+}
+
+publishing {
+    repositories {
+        maven {
+            name = 'everlawRepository'
+            url = uri('https://maven.pkg.github.com/Everlaw/servers')
+            credentials {
+                username = project.findProperty('everlawRepositoryUsername')
+                password = project.findProperty('everlawRepositoryPassword')
+            }
+        }
+    }
+    publications {
+        gpr(MavenPublication) {
+            artifactId = 'sharefile-api'
+            from(components.java)
         }
     }
 }
